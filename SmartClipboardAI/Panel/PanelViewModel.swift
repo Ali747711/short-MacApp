@@ -65,4 +65,9 @@ final class PanelViewModel {
     func copyResult(_ text: String) {
         copyBack(text)
     }
+
+    /// Toggle the pinned state of an item.
+    func toggleFavorite(_ item: ClipboardItem) {
+        history.toggleFavorite(for: item.id)
+    }
 }
