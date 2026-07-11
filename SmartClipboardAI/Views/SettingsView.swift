@@ -56,7 +56,7 @@ struct SettingsView: View {
                     Button("Clear History", role: .destructive) { history.clear() }
                     Button("Cancel", role: .cancel) {}
                 } message: {
-                    Text("This permanently removes all stored items.")
+                    Text("This removes all un-pinned items. Pinned favorites are kept.")
                 }
             }
         }
