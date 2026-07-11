@@ -9,6 +9,7 @@ struct DetailPaneView: View {
     let onRun: (AIAction) -> Void
     let onCopyResult: () -> Void
     let onOpenSettings: () -> Void
+    let onToggleFavorite: () -> Void
 
     @State private var justCopied = false
 
@@ -20,6 +21,19 @@ struct DetailPaneView: View {
     var body: some View {
         if let item {
             VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Spacer()
+                    Button(action: onToggleFavorite) {
+                        Image(systemName: item.isFavorite ? "star.fill" : "star")
+                    }
+                    .buttonStyle(.borderless)
+                    .foregroundStyle(item.isFavorite ? .yellow : .secondary)
+                    .keyboardShortcut("p", modifiers: .command)
+                    .help(item.isFavorite ? "Unpin" : "Pin")
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+
                 ScrollView {
                     VStack(alignment: .leading, spacing: 12) {
                         if item.isTruncated {

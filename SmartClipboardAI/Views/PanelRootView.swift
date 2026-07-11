@@ -21,6 +21,13 @@ struct PanelRootView: View {
         filteredItems.first { $0.id == selectedID }
     }
 
+    /// Visual order: pinned first, then recent — matches HistoryListView so
+    /// arrow-key navigation lines up with what's on screen.
+    private var orderedItems: [ClipboardItem] {
+        let filtered = filteredItems
+        return filtered.filter(\.isFavorite) + filtered.filter { !$0.isFavorite }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             searchField
@@ -38,7 +45,8 @@ struct PanelRootView: View {
                     actionState: model.actionState,
                     onRun: runAction,
                     onCopyResult: copyResult,
-                    onOpenSettings: model.openSettings
+                    onOpenSettings: model.openSettings,
+                    onToggleFavorite: toggleFavorite
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -49,11 +57,11 @@ struct PanelRootView: View {
         .onAppear {
             searchFocused = true
             model.resetState()
-            if selectedID == nil { selectedID = filteredItems.first?.id }
+            if selectedID == nil { selectedID = orderedItems.first?.id }
         }
         .onChange(of: searchText) {
             if !filteredItems.contains(where: { $0.id == selectedID }) {
-                selectedID = filteredItems.first?.id
+                selectedID = orderedItems.first?.id
             }
         }
         .onChange(of: selectedID) {
@@ -79,7 +87,7 @@ struct PanelRootView: View {
     }
 
     private func moveSelection(by delta: Int) {
-        let items = filteredItems
+        let items = orderedItems
         guard !items.isEmpty else { return }
         let current = items.firstIndex { $0.id == selectedID } ?? -1
         let next = min(max(current + delta, 0), items.count - 1)
@@ -101,5 +109,10 @@ struct PanelRootView: View {
     private func copyResult() {
         guard let output = selectedItem?.aiResult?.outputText else { return }
         model.copyResult(output)
+    }
+
+    private func toggleFavorite() {
+        guard let item = selectedItem else { return }
+        model.toggleFavorite(item)
     }
 }
