@@ -21,26 +21,11 @@ struct DetailPaneView: View {
     var body: some View {
         if let item {
             VStack(alignment: .leading, spacing: 0) {
-                HStack {
-                    Spacer()
-                    Button(action: onToggleFavorite) {
-                        Image(systemName: item.isFavorite ? "star.fill" : "star")
-                    }
-                    .buttonStyle(.borderless)
-                    .foregroundStyle(item.isFavorite ? .yellow : .secondary)
-                    .keyboardShortcut("p", modifiers: .command)
-                    .help(item.isFavorite ? "Unpin" : "Pin")
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
+                header(for: item)
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 12) {
-                        if item.isTruncated {
-                            Label("Truncated to 10,000 characters", systemImage: "scissors")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
+                    VStack(alignment: .leading, spacing: 14) {
+                        originalLabel(for: item)
 
                         Text(item.text)
                             .font(.body)
@@ -61,18 +46,54 @@ struct DetailPaneView: View {
         }
     }
 
+    // MARK: - Header
+
+    private func header(for item: ClipboardItem) -> some View {
+        HStack {
+            Text(item.copiedAt, format: .relative(presentation: .named))
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+            Spacer()
+            Button(action: onToggleFavorite) {
+                Image(systemName: item.isFavorite ? "star.fill" : "star")
+            }
+            .buttonStyle(.borderless)
+            .foregroundStyle(item.isFavorite ? .yellow : .secondary)
+            .keyboardShortcut("p", modifiers: .command)
+            .help(item.isFavorite ? "Unpin" : "Pin")
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
+        .padding(.bottom, 4)
+    }
+
+    private func originalLabel(for item: ClipboardItem) -> some View {
+        HStack(spacing: 6) {
+            Text("Original")
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundStyle(.secondary)
+            if item.isTruncated {
+                Label("truncated to 10,000 characters", systemImage: "scissors")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
+        }
+    }
+
+    // MARK: - Status (running / error / result)
+
     @ViewBuilder
     private func statusSection(for item: ClipboardItem) -> some View {
         switch actionState {
         case .running(let action):
-            Divider()
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
                 Text("\(action.rawValue.capitalized)…")
                     .foregroundStyle(.secondary)
             }
+            .padding(.top, 4)
         case .failed(let error):
-            Divider()
             VStack(alignment: .leading, spacing: 8) {
                 Label(error.message, systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.red)
@@ -80,36 +101,51 @@ struct DetailPaneView: View {
                     Button("Open Settings…", action: onOpenSettings)
                 }
             }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         case .idle:
             if let result = item.aiResult {
-                Divider()
-                resultSection(result)
+                resultCard(result)
             }
         }
     }
 
-    private func resultSection(_ result: AIResult) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(result.action.rawValue.capitalized)
+    private func resultCard(_ result: AIResult) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(result.action.rawValue.capitalized, systemImage: Self.icon(for: result.action))
                 .font(.caption)
+                .fontWeight(.medium)
                 .foregroundStyle(.secondary)
             Text(result.outputText)
                 .font(.body)
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
+
+    // MARK: - Action bar
 
     private func actionBar(for item: ClipboardItem) -> some View {
         HStack(spacing: 8) {
             Group {
-                Button("Translate") { onRun(.translate) }
-                    .keyboardShortcut("1", modifiers: .command)
-                Button("Summarize") { onRun(.summarize) }
-                    .keyboardShortcut("2", modifiers: .command)
-                Button("Clean") { onRun(.clean) }
-                    .keyboardShortcut("3", modifiers: .command)
+                Button { onRun(.translate) } label: {
+                    Label("Translate", systemImage: Self.icon(for: .translate))
+                }
+                .keyboardShortcut("1", modifiers: .command)
+                Button { onRun(.summarize) } label: {
+                    Label("Summarize", systemImage: Self.icon(for: .summarize))
+                }
+                .keyboardShortcut("2", modifiers: .command)
+                Button { onRun(.clean) } label: {
+                    Label("Clean", systemImage: Self.icon(for: .clean))
+                }
+                .keyboardShortcut("3", modifiers: .command)
             }
+            .buttonStyle(.bordered)
             .disabled(isRunning)
 
             Spacer()
@@ -118,12 +154,17 @@ struct DetailPaneView: View {
                 Label("Copied", systemImage: "checkmark.circle.fill")
                     .foregroundStyle(.green)
                     .font(.callout)
+                    .transition(.opacity)
             }
 
-            Button("Copy Result", action: copyResult)
-                .keyboardShortcut("c", modifiers: .command)
-                .disabled(item.aiResult == nil)
+            Button(action: copyResult) {
+                Label("Copy Result", systemImage: "doc.on.doc")
+            }
+            .buttonStyle(.borderedProminent)
+            .keyboardShortcut("c", modifiers: .command)
+            .disabled(item.aiResult == nil)
         }
+        .controlSize(.large)
         .padding(12)
     }
 
@@ -132,7 +173,15 @@ struct DetailPaneView: View {
         withAnimation { justCopied = true }
         Task {
             try? await Task.sleep(for: .seconds(1.5))
-            justCopied = false
+            withAnimation { justCopied = false }
+        }
+    }
+
+    private static func icon(for action: AIAction) -> String {
+        switch action {
+        case .translate: "character.book.closed"
+        case .summarize: "list.bullet.rectangle"
+        case .clean: "wand.and.sparkles"
         }
     }
 }

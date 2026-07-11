@@ -54,6 +54,10 @@ struct PanelRootView: View {
         .frame(width: 640, height: 480)
         .background(.regularMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.1), lineWidth: 0.5)
+        )
         .onAppear {
             searchFocused = true
             model.resetState()
@@ -75,15 +79,29 @@ struct PanelRootView: View {
                 .foregroundStyle(.secondary)
             TextField("Search clipboard history", text: $searchText)
                 .textFieldStyle(.plain)
-                .font(.title3)
+                .font(.system(size: 15))
                 .focused($searchFocused)
                 .onSubmit(copySelectedAndClose)
                 .onKeyPress(.downArrow) { moveSelection(by: 1); return .handled }
                 .onKeyPress(.upArrow) { moveSelection(by: -1); return .handled }
                 .onKeyPress(.escape) { onClose(); return .handled }
+            if !searchText.isEmpty {
+                Button {
+                    searchText = ""
+                    searchFocused = true
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.tertiary)
+                }
+                .buttonStyle(.plain)
+                .help("Clear search")
+            }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
     }
 
     private func moveSelection(by delta: Int) {
