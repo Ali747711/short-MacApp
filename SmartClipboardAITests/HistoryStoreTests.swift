@@ -54,4 +54,37 @@ final class HistoryStoreTests: XCTestCase {
         reloaded.load()
         XCTAssertTrue(reloaded.items.isEmpty)
     }
+
+    func testFavoriteExemptFromEviction() {
+        let store = HistoryStore(fileURL: tempURL())
+        let favorite = ClipboardItem(text: "keep-me", isFavorite: true)
+        store.add(favorite)
+        for i in 0..<(HistoryStore.maxItems + 10) {
+            store.add(ClipboardItem(text: "item-\(i)"))
+        }
+        XCTAssertTrue(store.items.contains { $0.id == favorite.id })
+        XCTAssertEqual(store.items.filter { !$0.isFavorite }.count, HistoryStore.maxItems)
+    }
+
+    func testToggleFavoritePersists() {
+        let url = tempURL()
+        let store = HistoryStore(fileURL: url)
+        let item = ClipboardItem(text: "x")
+        store.add(item)
+        store.toggleFavorite(for: item.id)
+        store.saveNow()
+
+        let reloaded = HistoryStore(fileURL: url)
+        reloaded.load()
+        XCTAssertEqual(reloaded.items.first?.isFavorite, true)
+    }
+
+    func testClearKeepsFavorites() {
+        let store = HistoryStore(fileURL: tempURL())
+        let favorite = ClipboardItem(text: "fav", isFavorite: true)
+        store.add(favorite)
+        store.add(ClipboardItem(text: "temp"))
+        store.clear()
+        XCTAssertEqual(store.items.map(\.text), ["fav"])
+    }
 }

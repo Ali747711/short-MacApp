@@ -21,14 +21,28 @@ final class HistoryStore {
 
     func add(_ item: ClipboardItem) {
         items.insert(item, at: 0)
-        if items.count > Self.maxItems {
-            items.removeLast(items.count - Self.maxItems)
-        }
+        evictOldestNonFavoritesOverLimit()
         scheduleSave()
     }
 
+    /// Trim the oldest un-pinned items so non-favorites stay within `maxItems`.
+    /// Favorites are never evicted (PRD §5 / Favorites spec).
+    private func evictOldestNonFavoritesOverLimit() {
+        var nonFavoriteCount = items.reduce(0) { $0 + ($1.isFavorite ? 0 : 1) }
+        guard nonFavoriteCount > Self.maxItems else { return }
+        var index = items.count - 1
+        while nonFavoriteCount > Self.maxItems, index >= 0 {
+            if !items[index].isFavorite {
+                items.remove(at: index)
+                nonFavoriteCount -= 1
+            }
+            index -= 1
+        }
+    }
+
+    /// Remove un-pinned items only; pinned favorites survive (Favorites spec).
     func clear() {
-        items.removeAll()
+        items.removeAll { !$0.isFavorite }
         scheduleSave()
     }
 
@@ -36,6 +50,13 @@ final class HistoryStore {
     func setResult(_ result: AIResult, for id: ClipboardItem.ID) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         items[index].aiResult = result
+        scheduleSave()
+    }
+
+    /// Toggle the pinned state of an item (Favorites spec).
+    func toggleFavorite(for id: ClipboardItem.ID) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        items[index].isFavorite.toggle()
         scheduleSave()
     }
 
