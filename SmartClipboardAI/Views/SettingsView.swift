@@ -13,6 +13,7 @@ struct SettingsView: View {
     @State private var testState: TestState = .idle
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
     @State private var showClearConfirmation = false
+    @AppStorage(AppearanceMode.defaultsKey) private var appearanceRaw = AppearanceMode.system.rawValue
 
     enum TestState: Equatable {
         case idle
@@ -36,6 +37,18 @@ struct SettingsView: View {
 
             Section("Hotkey") {
                 KeyboardShortcuts.Recorder("Toggle panel:", name: .togglePanel)
+            }
+
+            Section("Appearance") {
+                Picker("Theme", selection: $appearanceRaw) {
+                    ForEach(AppearanceMode.allCases) { mode in
+                        Text(mode.label).tag(mode.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: appearanceRaw) { _, raw in
+                    (AppearanceMode(rawValue: raw) ?? .system).apply()
+                }
             }
 
             Section("General") {
