@@ -24,6 +24,7 @@ final class AppState {
         self.keychain = keychain
         self.claude = ClaudeService(keyProvider: keychain)
 
+        AppearanceMode.stored().apply()
         history.load()
         monitor.onNewItem = { [weak history] item in
             history?.add(item)
