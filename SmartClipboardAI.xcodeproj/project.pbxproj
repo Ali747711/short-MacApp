@@ -16,6 +16,7 @@
 		4AFE3702BB5DAA3383043AAA /* DetailPaneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF6A1C2300345608A79BF0E2 /* DetailPaneView.swift */; };
 		4DFD1765B737286FF9DC3CD4 /* ClipboardItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B54509DAD6678C38C61566 /* ClipboardItem.swift */; };
 		57255283DC3893CDCB8166E7 /* PanelRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47AF8D662529710D845C14B3 /* PanelRootView.swift */; };
+		63CF63E4D284B843160BCEDF /* ClipboardItemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0608D51A48044C6E8480A0B0 /* ClipboardItemTests.swift */; };
 		63DDC490800B5E993CE3644E /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F1790BCBBD24C96C43B9E21 /* AppError.swift */; };
 		64B647F02D41B4F744C74B85 /* ClipboardFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CEF6F3859B1BB0F5835C659 /* ClipboardFilter.swift */; };
 		7445990F37DE4AEB865DCDE9 /* HistoryListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF3733CE03DF15A1AA243D1E /* HistoryListView.swift */; };
@@ -43,6 +44,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0608D51A48044C6E8480A0B0 /* ClipboardItemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardItemTests.swift; sourceTree = "<group>"; };
 		1A651ADDBC1BCE3A8B4E3FB4 /* ClaudeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeService.swift; sourceTree = "<group>"; };
 		1B64D068F5F303B57F3C6F6F /* HistoryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryStore.swift; sourceTree = "<group>"; };
 		1F1790BCBBD24C96C43B9E21 /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 			children = (
 				5DE44EAE84FF74AD6E77A4DB /* ClaudeServiceTests.swift */,
 				20D138DAEA373D46861CB17C /* ClipboardIgnoreRulesTests.swift */,
+				0608D51A48044C6E8480A0B0 /* ClipboardItemTests.swift */,
 				C1C3EEA7F837B6869DE2D7E5 /* HistoryStoreTests.swift */,
 			);
 			path = SmartClipboardAITests;
@@ -276,6 +279,7 @@
 			files = (
 				CB96398FFACAAC384C8CE4A0 /* ClaudeServiceTests.swift in Sources */,
 				DEDA77580C6C948F1D3C5925 /* ClipboardIgnoreRulesTests.swift in Sources */,
+				63CF63E4D284B843160BCEDF /* ClipboardItemTests.swift in Sources */,
 				DD049DAFC374EDB3F1CEA763 /* HistoryStoreTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
